@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로또무당 - AI 신령님의 로또 점괘</title>
+    <meta name="description" content="손금 분석·꿈 해몽·별자리 운세로 오늘의 로또 번호를 점지받으세요. AI 신령님이 행운의 번호를 내려드립니다.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --purple-light: #d8b4fe;
+            --purple-mid:   #c084fc;
+            --purple-main:  #a855f7;
+            --purple-dark:  #7c3aed;
+            --gold:         #fcd34d;
+            --bg:           #09091a;
+            --card:         #12122a;
+            --card2:        #16163a;
+            --border:       #2a2a5a;
+            --text:         #f0eeff;
+            --sub:          #c4b8e8;
+            --muted:        #9b8fc4;
+            --dim:          #6b5fa0;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* ── Navbar ── */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 24px;
+            background: rgba(9, 9, 26, 0.92);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+        }
+        .nav-logo img {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            list-style: none;
+        }
+        .nav-links a {
+            color: var(--sub);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: #fff; }
+
+        /* ── Hero ── */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 120px 24px 100px;
+        }
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 90% 70% at 50% 0%, rgba(124, 58, 237, 0.3) 0%, transparent 65%),
+                radial-gradient(ellipse 50% 40% at 15% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 35% at 85% 75%, rgba(192, 132, 252, 0.12) 0%, transparent 60%);
+        }
+
+        .hero-badge {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 18px;
+            border-radius: 24px;
+            background: rgba(168, 85, 247, 0.18);
+            border: 1px solid rgba(168, 85, 247, 0.45);
+            font-size: 13px;
+            color: var(--purple-light);
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 32px;
+        }
+
+        .app-logo {
+            position: relative;
+            width: 110px; height: 110px;
+            border-radius: 26px;
+            margin: 0 auto 28px;
+            box-shadow:
+                0 0 0 1px rgba(168, 85, 247, 0.4),
+                0 12px 40px rgba(124, 58, 237, 0.45),
+                0 0 80px rgba(168, 85, 247, 0.22);
+            animation: float 4s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50%       { transform: translateY(-10px); }
+        }
+
+        .hero h1 {
+            position: relative;
+            font-size: clamp(2.6rem, 8vw, 5rem);
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: -2px;
+            line-height: 1.05;
+            margin-bottom: 10px;
+        }
+        .hero .sub-title {
+            position: relative;
+            font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+            color: var(--purple-mid);
+            font-weight: 600;
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        .hero .tagline {
+            position: relative;
+            font-size: clamp(1rem, 2.2vw, 1.15rem);
+            color: var(--sub);
+            font-weight: 400;
+            line-height: 1.9;
+            margin-bottom: 44px;
+        }
+
+        .hero-buttons {
+            position: relative;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 0;
+        }
+        .btn-store {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 30px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: -0.3px;
+            min-width: 160px;
+            justify-content: center;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--purple-dark), var(--purple-main));
+            color: #fff;
+            box-shadow: 0 8px 28px rgba(124, 58, 237, 0.4);
+        }
+        .btn-primary:hover {
+            box-shadow: 0 14px 36px rgba(124, 58, 237, 0.55);
+            transform: translateY(-3px);
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.06);
+            color: #f0eeff;
+            border: 1.5px solid rgba(192, 132, 252, 0.35);
+        }
+        .btn-secondary:hover {
+            background: rgba(168, 85, 247, 0.14);
+            border-color: rgba(192, 132, 252, 0.6);
+            transform: translateY(-3px);
+        }
+        .btn-store svg {
+            width: 20px; height: 20px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+
+        /* ── 통계 바 ── */
+        .stats-section {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px 80px;
+        }
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        .stat-box {
+            text-align: center;
+            padding: 28px 12px;
+            border-right: 1px solid var(--border);
+        }
+        .stat-box:last-child { border-right: none; }
+        .stat-num {
+            font-size: clamp(1.4rem, 3vw, 2rem);
+            font-weight: 900;
+            color: var(--purple-light);
+            margin-bottom: 6px;
+        }
+        .stat-desc {
+            font-size: 12px;
+            color: var(--sub);
+            line-height: 1.4;
+        }
+
+        /* ── 공통 섹션 ── */
+        .section {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 80px 20px;
+        }
+        .section-header { text-align: center; margin-bottom: 48px; }
+        .section-label {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: var(--purple-mid);
+            margin-bottom: 10px;
+        }
+        .section-title {
+            font-size: clamp(1.7rem, 4vw, 2.5rem);
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: -1px;
+            line-height: 1.2;
+            margin-bottom: 14px;
+        }
+        .section-desc {
+            font-size: 1rem;
+            color: var(--sub);
+            line-height: 1.85;
+        }
+
+        /* ── 기능 그리드 ── */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        .feature-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 28px 24px;
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            border-color: rgba(168, 85, 247, 0.5);
+            transform: translateY(-5px);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+            background: var(--card2);
+        }
+        .feature-card.highlight {
+            grid-column: span 2;
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, var(--card) 65%);
+            border-color: rgba(168, 85, 247, 0.3);
+        }
+        .f-icon {
+            width: 50px; height: 50px;
+            border-radius: 13px;
+            background: rgba(168, 85, 247, 0.15);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            margin-bottom: 18px;
+        }
+        .feature-card h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        .feature-card p {
+            font-size: 0.92rem;
+            color: var(--sub);
+            line-height: 1.75;
+        }
+        .f-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 14px;
+        }
+        .f-tag {
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            background: rgba(168, 85, 247, 0.12);
+            color: var(--purple-light);
+            border: 1px solid rgba(168, 85, 247, 0.25);
+            font-weight: 500;
+        }
+
+        /* 로또 볼 */
+        .lotto-balls-demo {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .ball {
+            width: 46px; height: 46px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
+            font-weight: 800;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+            animation: ballPop 0.5s ease-out both;
+        }
+        .ball:nth-child(1) { background: linear-gradient(135deg, #fbbf24, #d97706); animation-delay: 0.1s; }
+        .ball:nth-child(2) { background: linear-gradient(135deg, #60a5fa, #2563eb); animation-delay: 0.2s; }
+        .ball:nth-child(3) { background: linear-gradient(135deg, #f87171, #dc2626); animation-delay: 0.3s; }
+        .ball:nth-child(4) { background: linear-gradient(135deg, #34d399, #059669); animation-delay: 0.4s; }
+        .ball:nth-child(5) { background: linear-gradient(135deg, #a78bfa, #7c3aed); animation-delay: 0.5s; }
+        .ball:nth-child(6) { background: linear-gradient(135deg, #f9a8d4, #db2777); animation-delay: 0.6s; }
+        @keyframes ballPop {
+            from { opacity: 0; transform: scale(0.4); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+
+        /* ── 구분선 ── */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 0 20px;
+        }
+
+        /* ── 미니게임 ── */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+        .game-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px 16px 24px;
+            text-align: center;
+            transition: all 0.28s ease;
+        }
+        .game-card:hover {
+            border-color: rgba(168, 85, 247, 0.45);
+            transform: translateY(-4px);
+            background: var(--card2);
+        }
+        .game-emoji {
+            font-size: 38px;
+            margin-bottom: 14px;
+            display: block;
+        }
+        .game-card h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        .game-card p {
+            font-size: 13px;
+            color: var(--sub);
+            line-height: 1.65;
+        }
+
+        /* ── 지원 ── */
+        .support-box {
+            max-width: 520px;
+            margin: 0 auto;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            padding: 48px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .support-box::before {
+            content: '';
+            position: absolute;
+            top: -1px; left: 15%; right: 15%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--purple-main), transparent);
+        }
+        .support-icon {
+            width: 58px; height: 58px;
+            margin: 0 auto 18px;
+            background: linear-gradient(135deg, var(--purple-dark), var(--purple-main));
+            border-radius: 15px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px;
+            box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        }
+        .support-box h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+        .support-box p {
+            color: var(--sub);
+            font-size: 0.95rem;
+            line-height: 1.85;
+            margin-bottom: 22px;
+        }
+        .email-link {
+            display: inline-block;
+            color: var(--purple-light);
+            font-size: 1.05rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(216, 180, 254, 0.35);
+            padding-bottom: 2px;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .email-link:hover {
+            color: #fff;
+            border-color: rgba(216, 180, 254, 0.7);
+        }
+
+        /* ── Footer ── */
+        footer {
+            position: relative;
+            z-index: 1;
+            border-top: 1px solid var(--border);
+            padding: 44px 24px 36px;
+            text-align: center;
+        }
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .footer-logo img {
+            width: 28px; height: 28px;
+            border-radius: 7px;
+        }
+        .footer-logo span {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .policy-links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 18px;
+        }
+        .policy-links a {
+            font-size: 13px;
+            color: var(--sub);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .policy-links a:hover { color: #fff; }
+        .corp-info {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.9;
+        }
+        .corp-info a {
+            color: var(--muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .corp-info a:hover { color: var(--sub); }
+
+        /* ── 모바일 반응형 ── */
+        @media (max-width: 768px) {
+            nav { padding: 13px 20px; }
+            .nav-links { display: none; }
+
+            .hero { padding: 100px 20px 80px; }
+            .hero h1 { letter-spacing: -1px; }
+            .app-logo { width: 90px; height: 90px; border-radius: 22px; }
+
+            .hero-buttons { gap: 10px; }
+            .btn-store { padding: 14px 24px; font-size: 14px; min-width: 140px; }
+
+            .stats-section { padding: 0 16px 60px; }
+            .stats-bar { grid-template-columns: repeat(2, 1fr); }
+            .stat-box:nth-child(2) { border-right: none; }
+            .stat-box:nth-child(1),
+            .stat-box:nth-child(2) { border-bottom: 1px solid var(--border); }
+
+            .section { padding: 60px 16px; }
+            .section-header { margin-bottom: 36px; }
+
+            .features-grid { grid-template-columns: 1fr; gap: 12px; }
+            .feature-card.highlight { grid-column: span 1; }
+            .feature-card { padding: 24px 20px; }
+
+            .games-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .game-card { padding: 24px 14px 20px; }
+
+            .support-box { padding: 36px 24px; }
+            .support-box h3 { font-size: 1.15rem; }
+        }
+
+        @media (max-width: 480px) {
+            .hero-buttons { flex-direction: column; align-items: stretch; }
+            .btn-store { width: 100%; padding: 16px; font-size: 15px; }
+
+            .stat-box { padding: 22px 10px; }
+            .section-title { letter-spacing: -0.5px; }
+
+            .lotto-balls-demo { gap: 6px; }
+            .ball { width: 40px; height: 40px; font-size: 13px; }
+
+            .support-box { padding: 32px 20px; }
+        }
+        /* ── 토스트 ── */
+        .toast {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: #1e1e40;
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 600;
+            padding: 13px 24px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s, transform 0.25s;
+            white-space: nowrap;
+            z-index: 999;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav>
+        <a class="nav-logo" href="#">
+            <img src="img/lotto_app.png" alt="로또무당">
+            로또무당
+        </a>
+        <ul class="nav-links">
+            <li><a href="#features">기능</a></li>
+            <li><a href="#support">지원</a></li>
+        </ul>
+        <a href="https://play.google.com/store/apps/details?id=com.arin.lotto&hl=ko" target="_blank" rel="noopener" class="btn-store btn-primary" style="padding: 10px 20px; font-size: 13px; border-radius: 10px; min-width: auto;">
+            무료 다운로드
+        </a>
+    </nav>
+
+    <!-- Hero -->
+    <div class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-badge">✦ AI 신령님의 로또 점괘 ✦</div>
+        <img class="app-logo" src="img/lotto_app.png" alt="로또무당 앱 로고">
+        <h1>로또무당</h1>
+        <p class="sub-title">Lotto Shaman</p>
+        <p class="tagline">
+            손금·꿈·별자리로 오늘의 행운 번호를 점지받으세요.<br>
+            AI 신령님이 그대의 기운을 읽고 운명의 번호를 내려드립니다.
+        </p>
+        <div class="hero-buttons" id="download">
+            <button onclick="showToast()" class="btn-store btn-primary" style="border:none;cursor:pointer;">
+                <svg viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                App Store
+            </button>
+            <a href="https://play.google.com/store/apps/details?id=com.arin.lotto&hl=ko" target="_blank" rel="noopener" class="btn-store btn-secondary">
+                <svg viewBox="0 0 24 24"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-1.4l2.754 1.596a1 1 0 010 1.731l-2.754 1.595L15.1 12l2.598-2.693zM5.864 3.458L16.8 9.791l-2.302 2.302-8.634-8.635z"/></svg>
+                Google Play
+            </a>
+        </div>
+    </div>
+
+    <!-- 통계 -->
+    <div class="stats-section">
+        <div class="stats-bar">
+            <div class="stat-box">
+                <div class="stat-num">AI</div>
+                <div class="stat-desc">Gemini<br>신령님 점괘</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-num">5종</div>
+                <div class="stat-desc">운세<br>분석 방식</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-num">4종</div>
+                <div class="stat-desc">무당<br>미니게임</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-num">실시간</div>
+                <div class="stat-desc">로또<br>당첨 확인</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 핵심 기능 -->
+    <div class="section" id="features">
+        <div class="section-header">
+            <p class="section-label">Features</p>
+            <h2 class="section-title">신령님의 다섯 가지 점술</h2>
+            <p class="section-desc">손금부터 꿈 해몽까지, 다양한 방식으로 오늘의 행운 번호를 받아보세요.</p>
+        </div>
+
+        <div class="features-grid">
+
+            <div class="feature-card highlight">
+                <div class="f-icon">🎱</div>
+                <h3>AI 로또 번호 추천</h3>
+                <p>Gemini AI 신령님이 오늘의 기운을 분석해 1~45 중 행운의 6개 번호를 점지합니다. 날짜 기반 시드로 같은 날이면 나만의 번호가 유지됩니다.</p>
+                <div class="lotto-balls-demo">
+                    <div class="ball">7</div>
+                    <div class="ball">14</div>
+                    <div class="ball">23</div>
+                    <div class="ball">31</div>
+                    <div class="ball">38</div>
+                    <div class="ball">42</div>
+                </div>
+                <div class="f-tags">
+                    <span class="f-tag">Gemini AI</span>
+                    <span class="f-tag">날짜 시드</span>
+                    <span class="f-tag">결과 카드 공유</span>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="f-icon">🤚</div>
+                <h3>손금 분석</h3>
+                <p>카메라로 손을 촬영하면 AI가 생명선·감정선·두뇌선을 분석해 오늘의 기운과 행운 번호를 알려줍니다.</p>
+                <div class="f-tags">
+                    <span class="f-tag">ML Kit 손 인식</span>
+                    <span class="f-tag">7일 세션</span>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="f-icon">💭</div>
+                <h3>꿈 해몽</h3>
+                <p>어젯밤 꿈 내용을 입력하면 AI가 해석하고 키워드와 함께 관련 번호를 추천합니다.</p>
+                <div class="f-tags">
+                    <span class="f-tag">AI 해석</span>
+                    <span class="f-tag">해몽 이력</span>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="f-icon">⭐</div>
+                <h3>별자리 운세</h3>
+                <p>생년월일 기반 황도 12궁 별자리에 맞는 오늘의 운세와 행운 번호를 받아볼 수 있습니다.</p>
+                <div class="f-tags">
+                    <span class="f-tag">황도 12궁</span>
+                    <span class="f-tag">일일 운세</span>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="f-icon">📍</div>
+                <h3>행운의 명당 지도</h3>
+                <p>GPS로 내 위치를 파악하고 주변 로또 판매점을 지도에 표시합니다. 행운 방위도 함께 알려드립니다.</p>
+                <div class="f-tags">
+                    <span class="f-tag">카카오 API</span>
+                    <span class="f-tag">행운 방향</span>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="f-icon">📱</div>
+                <h3>QR 당첨 확인</h3>
+                <p>로또 용지의 QR 코드를 스캔하면 실시간으로 당첨 여부를 확인합니다. 1등 당첨 시 특별 축하 애니메이션이 재생됩니다.</p>
+                <div class="f-tags">
+                    <span class="f-tag">QR 스캔</span>
+                    <span class="f-tag">당첨 애니메이션</span>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="f-icon">📊</div>
+                <h3>로또 번호 통계</h3>
+                <p>회차별 당첨 번호 데이터로 핫넘버·콜드넘버·패턴을 분석해 전략적인 번호 선택을 도와드립니다.</p>
+                <div class="f-tags">
+                    <span class="f-tag">빈출 번호</span>
+                    <span class="f-tag">패턴 분석</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 지원 -->
+    <div class="section" id="support">
+        <div class="section-header">
+            <p class="section-label">Support</p>
+            <h2 class="section-title">고객 지원</h2>
+        </div>
+        <div class="support-box">
+            <div class="support-icon">🐇</div>
+            <h3>문의하기</h3>
+            <p>앱 이용 중 문의사항이 있으시면 아래 이메일로 연락해 주세요.<br>영업일 기준 1~2일 내 답변드립니다.</p>
+            <a class="email-link" href="mailto:coderabbitapp@gmail.com">coderabbitapp@gmail.com</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-logo">
+            <img src="img/lotto_app.png" alt="로또무당">
+            <span>로또무당</span>
+        </div>
+        <div class="policy-links">
+            <a href="privacy_policy.html">개인정보처리방침</a>
+            <a href="terms_of_service.html">이용약관</a>
+        </div>
+        <p class="corp-info">
+            &copy; 2026 코드래빗. All rights reserved.<br>
+            상호: 코드래빗 &nbsp;|&nbsp; 대표자: 이현준 &nbsp;|&nbsp; 사업자등록번호: 740-69-00653<br>
+            <a href="mailto:coderabbitapp@gmail.com">coderabbitapp@gmail.com</a>
+        </p>
+    </footer>
+
+    <div class="toast" id="toast">🍎 App Store — 준비중입니다</div>
+
+    <script>
+        function showToast() {
+            const t = document.getElementById('toast');
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2200);
+        }
+    </script>
+</body>
+</html>
